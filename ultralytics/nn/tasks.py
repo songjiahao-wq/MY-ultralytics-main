@@ -961,7 +961,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 n = 1
 
         # """**************add Attention***************"""
-        elif m in {GAM_Attention, SpectralAttention, SoftThresholdAttentionResidual,
+        elif m in {GAMAttention, SpectralAttention, SoftThresholdAttentionResidual,
                    MultiSpectralAttentionLayer, CBAM, EffectiveSEModule,
                    CAMConv, CAConv, CBAMConv, RFAConv, LightweightSPPFA, SPPA_CBAM, SPPFC, PSAMix,
                    ResidualGroupConv, PSAModule_s,
