@@ -6,6 +6,8 @@ import math
 import numpy as np
 import torchvision
 from torch.nn.parameter import Parameter
+
+
 # from add_models.experimental import MixConv2d
 class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
@@ -30,7 +32,9 @@ class MixConv2d(nn.Module):
 
     def forward(self, x):
         return self.act(self.bn(torch.cat([m(x) for m in self.m], 1)))
-def autopad(k, p=None,d=1):  # kernel, padding
+
+
+def autopad(k, p=None, d=1):  # kernel, padding
     # Pad to 'same'
     if d > 1:
         k = d * (k - 1) + 1 if isinstance(k, int) else [d * (x - 1) + 1 for x in k]  # actual kernel-size
@@ -39,9 +43,11 @@ def autopad(k, p=None,d=1):  # kernel, padding
         p = k // 2 if isinstance(k, int) else [x // 2 for x in k]  # auto-pad
     return p
 
+
 class Conv(nn.Module):
     # Standard convolution
     default_act = nn.SiLU()  # default activation
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
         super(Conv, self).__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
@@ -53,15 +59,17 @@ class Conv(nn.Module):
 
     def fuseforward(self, x):
         return self.act(self.conv(x))
-#********************PSA****************
+
+
+# ********************PSA****************
 class SEWeightModule(nn.Module):
 
     def __init__(self, channels, reduction=16):
         super(SEWeightModule, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Conv2d(channels, channels//reduction, kernel_size=1, padding=0)
+        self.fc1 = nn.Conv2d(channels, channels // reduction, kernel_size=1, padding=0)
         self.relu = nn.ReLU(inplace=True)
-        self.fc2 = nn.Conv2d(channels//reduction, channels, kernel_size=1, padding=0)
+        self.fc2 = nn.Conv2d(channels // reduction, channels, kernel_size=1, padding=0)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
@@ -72,6 +80,8 @@ class SEWeightModule(nn.Module):
         weight = self.sigmoid(out)
 
         return weight
+
+
 class ECAAttention(nn.Module):
 
     def __init__(self, kernel_size=3):
@@ -101,30 +111,34 @@ class ECAAttention(nn.Module):
         y = self.sigmoid(y)  # bs,1,c
         y = y.permute(0, 2, 1).unsqueeze(-1)  # bs,c,1,1
         return y.expand_as(x)
+
+
 def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, groups=1):
     """standard convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
                      padding=padding, dilation=dilation, groups=groups, bias=False)
+
+
 class PSAModule_s(nn.Module):
 
     def __init__(self, inplans, planes, conv_kernels=[3, 5, 7, 9], stride=1, conv_groups=[1, 4, 8, 16]):
         super(PSAModule_s, self).__init__()
-        self.dimplanes = planes// 4
-        self.conv_1 = conv(inplans, planes//4, kernel_size=conv_kernels[0], padding=conv_kernels[0]//2,
-                            stride=stride, groups=conv_groups[0])
-        self.conv_2 = conv(inplans, planes//4, kernel_size=conv_kernels[1], padding=conv_kernels[1]//2,
-                            stride=stride, groups=conv_groups[1])
-        self.conv_3 = conv(inplans, planes//4, kernel_size=conv_kernels[2], padding=conv_kernels[2]//2,
-                            stride=stride, groups=conv_groups[2])
-        self.conv_4 = conv(inplans, planes//4, kernel_size=conv_kernels[3], padding=conv_kernels[3]//2,
-                            stride=stride, groups=conv_groups[3])
+        self.dimplanes = planes // 4
+        self.conv_1 = conv(inplans, planes // 4, kernel_size=conv_kernels[0], padding=conv_kernels[0] // 2,
+                           stride=stride, groups=conv_groups[0])
+        self.conv_2 = conv(inplans, planes // 4, kernel_size=conv_kernels[1], padding=conv_kernels[1] // 2,
+                           stride=stride, groups=conv_groups[1])
+        self.conv_3 = conv(inplans, planes // 4, kernel_size=conv_kernels[2], padding=conv_kernels[2] // 2,
+                           stride=stride, groups=conv_groups[2])
+        self.conv_4 = conv(inplans, planes // 4, kernel_size=conv_kernels[3], padding=conv_kernels[3] // 2,
+                           stride=stride, groups=conv_groups[3])
         self.se = ECAAttention()
         self.split_channel = planes // 4
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        batch_size,H,W = x.shape[0],x.shape[2],x.shape[3]
-        x1,x2,x3,x4 = torch.split(x,(self.dimplanes,self.dimplanes,self.dimplanes,self.dimplanes),dim=1)
+        batch_size, H, W = x.shape[0], x.shape[2], x.shape[3]
+        x1, x2, x3, x4 = torch.split(x, (self.dimplanes, self.dimplanes, self.dimplanes, self.dimplanes), dim=1)
 
         feats = torch.cat((x1, x2, x3, x4), dim=1)
         feats = feats.view(batch_size, 4, self.split_channel, feats.shape[2], feats.shape[3])
@@ -135,7 +149,7 @@ class PSAModule_s(nn.Module):
         x4_se = self.se(x4)
 
         x_se = torch.cat((x1_se, x2_se, x3_se, x4_se), dim=1)
-        attention_vectors = x_se.view(batch_size, 4, self.split_channel, H, W) #bs,c/4,H,W
+        attention_vectors = x_se.view(batch_size, 4, self.split_channel, H, W)  # bs,c/4,H,W
         attention_vectors = self.softmax(attention_vectors)
         feats_weight = feats * attention_vectors
         for i in range(4):
@@ -146,11 +160,14 @@ class PSAModule_s(nn.Module):
                 out = torch.cat((x_se_weight_fp, out), 1)
         return out
 
-#SPPFA**************************************
+
+# SPPFA**************************************
 """通过多个串行的最大池化层"""
+
+
 class SPPFA(nn.Module):
     # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
-    def __init__(self, c1, c2, k=5,reduction=16):  # equivalent to SPP(k=(5, 9, 13))
+    def __init__(self, c1, c2, k=5, reduction=16):  # equivalent to SPP(k=(5, 9, 13))
         super().__init__()
         c_ = c1 // 2  # hidden channels
         self.cv1 = nn.Conv2d(c1, c_, 1, 1)
@@ -158,7 +175,7 @@ class SPPFA(nn.Module):
         self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
         # self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
         self.fc = nn.Sequential(
-            nn.Linear(c2 , c2 // reduction, bias=False),
+            nn.Linear(c2, c2 // reduction, bias=False),
             nn.ReLU(),
             nn.Linear(c2 // reduction, c2, bias=False),
             nn.Sigmoid()
@@ -175,6 +192,7 @@ class SPPFA(nn.Module):
         out = self.avg_pool1(out).reshape((b, -1))
         b = self.fc(out).view(b, c, 1, 1)
         return x * b
+
 
 class LightweightSPPFA(nn.Module):
     def __init__(self, c1, c2, k=5, reduction=16):
@@ -199,9 +217,10 @@ class LightweightSPPFA(nn.Module):
         b = self.fc(out).view(b, c, 1, 1)
         return x * b
 
-#SPPA_CBAM****************************************
+
+# SPPA_CBAM****************************************
 class SPA(nn.Module):
-    #多尺度通道注意力
+    # 多尺度通道注意力
     def __init__(self, channel, reduction=16):
         super().__init__()
         self.avg_pool1 = nn.AdaptiveAvgPool2d(1)
@@ -217,6 +236,7 @@ class SPA(nn.Module):
         # 设置可学习权值
         self.w1 = nn.Parameter(torch.FloatTensor(1), requires_grad=True)
         self.w1.data.fill_(0.5)
+
     def forward(self, x):
         b, c, _, _ = x.shape
         y1 = self.avg_pool1(x).reshape((b, -1))
@@ -227,13 +247,14 @@ class SPA(nn.Module):
         # y = self.fc(y).reshape((b, c, 1, 1)) *self.w1 #添加自适应学习权值，对通道信息增加自适应特征学习
         return x * y
 
+
 class SPAF(nn.Module):
-    #多尺度通道注意力
+    # 多尺度通道注意力
     def __init__(self, channel, reduction=16):
         super().__init__()
-        self.avg_pool1 =    nn.AdaptiveAvgPool2d(1)
-        self.avg_pool2 =    nn.AdaptiveAvgPool2d(2)
-        self.avg_pool4 =    nn.AdaptiveAvgPool2d(4)
+        self.avg_pool1 = nn.AdaptiveAvgPool2d(1)
+        self.avg_pool2 = nn.AdaptiveAvgPool2d(2)
+        self.avg_pool4 = nn.AdaptiveAvgPool2d(4)
 
         self.fc = nn.Sequential(
             nn.Linear(channel * 21, channel // reduction, bias=False),
@@ -244,6 +265,7 @@ class SPAF(nn.Module):
         # 设置可学习权值
         self.w1 = nn.Parameter(torch.FloatTensor(1), requires_grad=True)
         self.w1.data.fill_(0.5)
+
     def forward(self, x):
         b, c, _, _ = x.shape
         y1 = self.avg_pool1(x).reshape((b, -1))
@@ -253,6 +275,7 @@ class SPAF(nn.Module):
         y = self.fc(y).reshape((b, c, 1, 1))
         # y = self.fc(y).reshape((b, c, 1, 1)) *self.w1 #添加自适应学习权值，对通道信息增加自适应特征学习
         return x * y
+
 
 class SpatialAttention(nn.Module):
     # CBAM的空间注意力
@@ -269,10 +292,12 @@ class SpatialAttention(nn.Module):
         avg_out = torch.mean(x, dim=1, keepdim=True)
         max_out, _ = torch.max(x, dim=1, keepdim=True)
         x = torch.cat([avg_out, max_out], dim=1)
-        #2*h*w
+        # 2*h*w
         x = self.conv(x)
-        #1*h*w
+        # 1*h*w
         return self.sigmoid(x)
+
+
 class SPPA_CBAM(nn.Module):
     # CSP Bottleneck with 3 convolutions
     def __init__(self, c1, c2, ratio=16, kernel_size=7):  # ch_in, ch_out, number, shortcut, groups, expansion
@@ -286,15 +311,16 @@ class SPPA_CBAM(nn.Module):
         # c*h*w * 1*h*w
         out = self.spatial_attention(out) * out
         return out
-#SPPFC**************************************
+
+
+# SPPFC**************************************
 """通过多个串行卷积层"""
-def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, groups=1):
-    """standard convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
-                     padding=padding, dilation=dilation, groups=groups, bias=False)
+
+
 class SPPFC(nn.Module):
     # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
-    def __init__(self, c1, c2, k=[3,3,3] , reduction=16, group=True,conv_groups=[4, 8, 16 , 32]):  # equivalent to SPP(k=(5, 9, 13))
+    def __init__(self, c1, c2, k=[3, 3, 3], reduction=16, group=True,
+                 conv_groups=[4, 8, 16, 32]):  # equivalent to SPP(k=(5, 9, 13))
         super(SPPFC, self).__init__()
         c_ = c1 // 2  # hidden channels
         self.cv1 = conv(c1, c_, 1, 1)
@@ -302,11 +328,11 @@ class SPPFC(nn.Module):
         self.cv2 = conv(c_ * (1 + len(k)), c2 // reduction, 1, 1)
         # self.cv2 = conv((c2 // reduction) * (1 + len(k)), c2 // reduction, 1, 1)
         if not group:
-            self.m = nn.ModuleList(conv(c_, c_, k[i],padding=k[i]//2) for i in range(len(k)))
+            self.m = nn.ModuleList(conv(c_, c_, k[i], padding=k[i] // 2) for i in range(len(k)))
         else:
             self.m = nn.ModuleList(conv(c_, c_, k[i], padding=k[i] // 2, groups=conv_groups[i]) for i in range(len(k)))
         self.fc = nn.Sequential(
-            nn.Linear(c2 // reduction , c2 // reduction, bias=False),
+            nn.Linear(c2 // reduction, c2 // reduction, bias=False),
             nn.ReLU(),
             nn.Linear(c2 // reduction, c2, bias=False),
             nn.Sigmoid()
@@ -324,15 +350,22 @@ class SPPFC(nn.Module):
         weight = self.fc(out).view(b, c, 1, 1)
         return x * weight
 
-#PSAMix with MixConv2d**********************
+    def conv(self, in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, groups=1):
+        """standard convolution with padding"""
+        return nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride,
+                         padding=padding, dilation=dilation, groups=groups, bias=False)
+
+
+# PSAMix注意力 with MixConv2d**********************
 class PSAMix(nn.Module):
 
-    def __init__(self, inplans, planes, conv_kernels=[[3, 3],[3, 5],[5, 7],[7, 9]], stride=1, conv_groups=[1, 4, 8, 16]):
+    def __init__(self, inplans, planes, conv_kernels=[[3, 3], [3, 5], [5, 7], [7, 9]], stride=1,
+                 conv_groups=[1, 4, 8, 16]):
         super(PSAMix, self).__init__()
-        self.conv_1 = MixConv2d(inplans, planes//4, k=conv_kernels[0])
-        self.conv_2 = MixConv2d(inplans, planes//4, k=conv_kernels[1])
-        self.conv_3 = MixConv2d(inplans, planes//4, k=conv_kernels[2])
-        self.conv_4 = MixConv2d(inplans, planes//4, k=conv_kernels[3])
+        self.conv_1 = MixConv2d(inplans, planes // 4, k=conv_kernels[0])
+        self.conv_2 = MixConv2d(inplans, planes // 4, k=conv_kernels[1])
+        self.conv_3 = MixConv2d(inplans, planes // 4, k=conv_kernels[2])
+        self.conv_4 = MixConv2d(inplans, planes // 4, k=conv_kernels[3])
         self.se = SEWeightModule(planes // 4)
         self.split_channel = planes // 4
         self.softmax = nn.Softmax(dim=1)
@@ -364,7 +397,8 @@ class PSAMix(nn.Module):
                 out = torch.cat((x_se_weight_fp, out), 1)
         return out
 
-#ACmix**************************************
+
+# ACmix**************************************
 def position(H, W, is_cuda=True):
     if is_cuda:
         loc_w = torch.linspace(-1.0, 1.0, W).cuda().unsqueeze(0).repeat(H, 1)
@@ -391,6 +425,7 @@ def init_rate_0(tensor):
         tensor.data.fill_(0.)
 
 
+# ACmix注意力
 class ACmix(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_att=7, head=4, kernel_conv=3, stride=1, dilation=1):
         super(ACmix, self).__init__()
@@ -476,6 +511,8 @@ class ACmix(nn.Module):
 
         return self.rate1 * out_att + self.rate2 * out_conv
 
+
+# 去噪注意力
 class SpectralAttention(nn.Module):
     def __init__(self, in_channels):
         super(SpectralAttention, self).__init__()
@@ -505,6 +542,8 @@ class SpectralAttention(nn.Module):
         x_weighted = torch.fft.ifft2(x_fft_weighted).real
 
         return x_weighted
+
+
 """
 可变性卷积DCNv2
 DCNv1解决的问题就是我们常规的图像增强，仿射变换（线性变换加平移）不能解决的多种形式目标变换的几何变换的问题
@@ -512,70 +551,6 @@ DCNv1解决的问题就是我们常规的图像增强，仿射变换（线性变
 1、扩展可变形卷积，增强建模能力
 2、提出了特征模拟方案指导网络培训
 """
-class DCNv2(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=1, dilation=1, groups=1, deformable_groups=1):
-        super(DCNv2, self).__init__()
-
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = (kernel_size, kernel_size)
-        self.stride = (stride, stride)
-        self.padding = (padding, padding)
-        self.dilation = (dilation, dilation)
-        self.groups = groups
-        self.deformable_groups = deformable_groups
-
-        self.weight = nn.Parameter(
-            torch.empty(out_channels, in_channels, *self.kernel_size)
-        )
-        self.bias = nn.Parameter(torch.empty(out_channels))
-
-        out_channels_offset_mask = (self.deformable_groups * 3 *
-                                    self.kernel_size[0] * self.kernel_size[1])
-        self.conv_offset_mask = nn.Conv2d(
-            self.in_channels,
-            out_channels_offset_mask,
-            kernel_size=self.kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-            bias=True,
-        )
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.act = Conv.default_act
-        self.reset_parameters()
-
-    def forward(self, x):
-        offset_mask = self.conv_offset_mask(x)
-        o1, o2, mask = torch.chunk(offset_mask, 3, dim=1)
-        offset = torch.cat((o1, o2), dim=1)
-        mask = torch.sigmoid(mask)
-        x = torchvision.ops.deform_conv2d(
-            x,
-            self.weight,
-            offset,
-            mask,
-            self.bias,
-            self.stride[0], self.stride[1],
-            self.padding[0], self.padding[1],
-            self.dilation[0], self.dilation[1],
-            self.groups,
-            self.deformable_groups,
-            True
-        )
-        x = self.bn(x)
-        x = self.act(x)
-        return x
-
-    def reset_parameters(self):
-        n = self.in_channels
-        for k in self.kernel_size:
-            n *= k
-        std = 1. / math.sqrt(n)
-        self.weight.data.uniform_(-std, std)
-        self.bias.data.zero_()
-        self.conv_offset_mask.weight.data.zero_()
-        self.conv_offset_mask.bias.data.zero_()
 
 
 # --------------------------DCNv2 start--------------------------
@@ -636,9 +611,9 @@ class DCNv22(nn.Module):
         return x
 
 
-if __name__ =="__main__":
+if __name__ == "__main__":
     x = torch.randn(1, 64, 20, 20)
     b, c, h, w = x.shape
-    net = DCNv2(64, 128,3,2)
+    net = DCNv22(64, 128, 3, 1)
     y = net(x)
     print(y.size())
