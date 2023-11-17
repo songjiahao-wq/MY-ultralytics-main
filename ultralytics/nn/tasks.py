@@ -6,6 +6,12 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+from ultralytics.nn.import_module import *
+from ultralytics.nn.models.add_models.add_block import *
+from ultralytics.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
+                                    Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
+                                    Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
+                                    RTDETRDecoder, Segment)
 
 from ultralytics.nn.modules import (
     AIFI,
@@ -953,6 +959,49 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m in {BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost, C3x, RepC3, C2fCIB}:
                 args.insert(2, n)  # number of repeats
                 n = 1
+
+        # """**************add Attention***************"""
+        elif m in {GAM_Attention, SpectralAttention, SoftThresholdAttentionResidual,
+                   MultiSpectralAttentionLayer, CBAM, EffectiveSEModule,
+                   CAMConv, CAConv, CBAMConv, RFAConv, LightweightSPPFA, SPPA_CBAM, SPPFC, PSAMix,
+                   ResidualGroupConv, PSAModule_s,
+                   DyMCAConv, DyCAConv, CAConv2, SKConv, GSConv, VoVGSCSP, SPPCSPC, deformable_LKA_Attention,
+                   deformable_LKA_Attention_experimental}:
+            c1, c2 = ch[f], args[0]
+            if c2 != nc:  # if not output
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, *args[1:]]
+        elif m is RepGhostBottleneck:
+            c1, mid, c2 = ch[f],args[1], args[2]
+            mid = make_divisible(mid * width, 4)
+            c2 = make_divisible(c2 * width, 4)
+            args = [c1, mid, c2, *args[3:]]
+        elif m is convnextv2_att:
+            c2 = args[0]
+            # args = args[1:]
+        elif m is GGhostRegNet:
+            widths.append(args[0])
+            if args[1] != 0:
+                widths[-2] = ch[f]
+            block = GHOSTBottleneck
+            GHOSTBottleneck_layers.append(n)
+            args = [block, GHOSTBottleneck_layers, widths, args[1]]
+            n = 1
+        elif m is ASFF2:
+            c1, c2 = [ch[f[0]], ch[f[1]]], args[0]
+            c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, *args[1:]]
+        elif m is ASFF3:
+            c1, c2 = [ch[f[0]], ch[f[1]], ch[f[2]]], args[0]
+            c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, *args[1:]]
+        elif m is ASFF4:
+            c1, c2 = [ch[f[0]], ch[f[1]], ch[f[2]], ch[f[3]]], args[0]
+            c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, *args[1:]]
+        elif m is HorNet:
+            c2 = args[0]
+            args = args[1:]
         elif m is AIFI:
             args = [ch[f], *args]
         elif m in {HGStem, HGBlock}:

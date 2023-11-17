@@ -2,7 +2,7 @@ from torch import nn, sqrt
 import torch
 import sys
 from math import sqrt
-sys.path.append('.')
+sys.path.append('')
 from model.conv.MBConv import MBConvBlock
 from model.attention.SelfAttention import ScaledDotProductAttention
 
