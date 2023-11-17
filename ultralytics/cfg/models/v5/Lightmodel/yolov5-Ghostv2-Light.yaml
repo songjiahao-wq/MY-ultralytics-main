@@ -1,0 +1,44 @@
+# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
+
+#YOLOv5s-Ghostv2-3 summary: 634 layers, 6427593 parameters, 6427593 gradients 8.312 GFLOPs
+#forward (ms) 113.6 backward (ms) 188.6
+# Parameters
+nc: 80  # number of classes
+depth_multiple: 1.0  # model depth multiple
+width_multiple: 1.0  # layer channel multiple
+anchors:
+  - [10,13, 16,30, 33,23]  # P3/8
+  - [30,61, 62,45, 59,119]  # P4/16
+  - [116,90, 156,198, 373,326]  # P5/32
+
+# YOLOv5 v6.0 backbone
+backbone:
+  # [from, number, module, args]
+  [#[-1, 1, Conv, [64, 6, 2, 2]],  # 0-P1/2
+   [-1, 1, ghostnetv2_model, [40, 3]], # 0-P3/8
+   [-1, 1, ghostnetv2_model, [112, 4]], # 1-P4/16 16*16
+   [-1, 1, ghostnetv2_model, [960, 5]], # 2-P5/32 8*8
+  ]
+
+# YOLOv5 v6.0 head
+head:
+  [[-1, 1, GhostConv, [240, 1, 1]],
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']], #16*16
+   [[-1, 1], 1, Concat, [1]],  # cat backbone P4
+   [-1, 1, C3Ghost, [240, False]],  # 6
+
+   [-1, 1, GhostConv, [120, 1, 1]],
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']], #32*32
+   [[-1, 0], 1, Concat, [1]],  # cat backbone P3
+   [-1, 1, C3Ghost, [120, False]],  # 10 (P3/8-small)
+
+   [-1, 1, GhostConv, [120, 3, 2]],
+   [[-1, 7], 1, Concat, [1]],  # cat head P4 16*16
+   [-1, 1, C3Ghost, [240, False]],  # 13 (P4/16-medium)
+
+   [-1, 1, GhostConv, [240, 3, 2]],
+   [[-1, 3], 1, Concat, [1]],  # cat head P5
+   [-1, 1, C3Ghost, [480, False]],  # 16 (P5/32-large)
+
+   [[10, 13, 16], 1, Detect, [nc, anchors]],  # Detect(P3, P4, P5)
+  ]
