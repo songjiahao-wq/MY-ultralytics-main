@@ -19,7 +19,7 @@ class EMAU(nn.Module):
         stage_num (int): The iteration number for EM.
     '''
 
-    def __init__(self, c, k, stage_num=3):
+    def __init__(self, c,c2, k, stage_num=3):
         super(EMAU, self).__init__()
         self.stage_num = stage_num
 

@@ -6,7 +6,7 @@ import math
 import numpy as np
 import torchvision
 from torch.nn.parameter import Parameter
-
+from ultralytics.nn.import_module import ECAAttention
 
 # from add_models.experimental import MixConv2d
 class MixConv2d(nn.Module):
@@ -82,35 +82,7 @@ class SEWeightModule(nn.Module):
         return weight
 
 
-class ECAAttention(nn.Module):
 
-    def __init__(self, kernel_size=3):
-        super().__init__()
-        self.gap = nn.AdaptiveAvgPool2d(1)
-        self.conv = nn.Conv1d(1, 1, kernel_size=kernel_size, padding=(kernel_size - 1) // 2)
-        self.sigmoid = nn.Sigmoid()
-
-    def init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                init.kaiming_normal_(m.weight, mode='fan_out')
-                if m.bias is not None:
-                    init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                init.constant_(m.weight, 1)
-                init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                init.normal_(m.weight, std=0.001)
-                if m.bias is not None:
-                    init.constant_(m.bias, 0)
-
-    def forward(self, x):
-        y = self.gap(x)  # bs,c,1,1
-        y = y.squeeze(-1).permute(0, 2, 1)  # bs,1,c
-        y = self.conv(y)  # bs,1,c
-        y = self.sigmoid(y)  # bs,1,c
-        y = y.permute(0, 2, 1).unsqueeze(-1)  # bs,c,1,1
-        return y.expand_as(x)
 
 
 def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1, groups=1):
@@ -426,9 +398,9 @@ def init_rate_0(tensor):
 
 
 # ACmix注意力
-class ACmix(nn.Module):
+class ACmix2(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_att=7, head=4, kernel_conv=3, stride=1, dilation=1):
-        super(ACmix, self).__init__()
+        super(ACmix2, self).__init__()
         self.in_planes = in_planes
         self.out_planes = out_planes
         self.head = head

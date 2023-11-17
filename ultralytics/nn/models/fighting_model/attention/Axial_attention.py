@@ -354,6 +354,7 @@ class AxialImageTransformer(nn.Module):
 # print(attn(input).shape) # (1, 3, 256, 256)
 
 if __name__ == '__main__':
+
     input=torch.randn(3, 128, 7, 7)
     model = AxialImageTransformer(
         dim = 128,
