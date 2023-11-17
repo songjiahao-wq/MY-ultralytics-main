@@ -77,7 +77,7 @@ class ScaledDotProductAttention(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,49,512)
+    input=torch.randn(20,20,512)
     sa = ScaledDotProductAttention(d_model=512, d_k=512, d_v=512, h=8)
     output=sa(input,input,input)
     print(output.shape)

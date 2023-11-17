@@ -19,7 +19,7 @@ class LKA(nn.Module):
 
 
 class LKA_Attention(nn.Module):
-    def __init__(self, d_model):
+    def __init__(self, d_model,c2):
         super().__init__()
 
         self.proj_1 = nn.Conv2d(d_model, d_model, 1)
@@ -38,5 +38,5 @@ class LKA_Attention(nn.Module):
 
 
 if __name__ == '__main__':
-    lka_module = LKA(64)
+    lka_module = LKA_Attention(64)
     print("LKA parameters: {}".format(sum(p.numel() for p in lka_module.parameters() if p.requires_grad)))

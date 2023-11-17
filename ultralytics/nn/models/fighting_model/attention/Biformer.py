@@ -117,7 +117,7 @@ class BiLevelRoutingAttention(nn.Module):
     soft_routing: wether to multiply soft routing weights
     """
 
-    def __init__(self, dim, c_, n_win=7, num_heads=4, qk_dim=None, qk_scale=None,
+    def __init__(self, dim, c_, n_win=7, num_heads=8, qk_dim=None, qk_scale=None,
                  kv_per_win=4, kv_downsample_ratio=4, kv_downsample_kernel=None, kv_downsample_mode='identity',
                  topk=4, param_attention="qkvo", param_routing=False, diff_routing=False, soft_routing=False,
                  side_dwconv=3,
@@ -291,13 +291,13 @@ class BiLevelRoutingAttention(nn.Module):
         else:
             return rearrange(out, "n h w c -> n c h w")
 
-# Attention1
+
 class Attention(nn.Module):
     """
     vanilla attention
     """
 
-    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(self, dim,c2, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -336,13 +336,13 @@ class Attention(nn.Module):
         x = rearrange(x, 'n (h w) c -> n c h w', h=H, w=W)
         return x
 
-#Attention  2
+
 class AttentionLePE(nn.Module):
     """
     vanilla attention
     """
 
-    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., side_dwconv=5):
+    def __init__(self, dim,c2, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., side_dwconv=5):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -388,43 +388,3 @@ class AttentionLePE(nn.Module):
 
         x = rearrange(x, 'n (h w) c -> n c h w', h=H, w=W)
         return x
-class nchwAttentionLePE(nn.Module):
-    """
-    Attention with LePE, takes nchw input
-    """
-    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., side_dwconv=5):
-        super().__init__()
-        self.num_heads = num_heads
-        self.head_dim = dim // num_heads
-        self.scale = qk_scale or self.head_dim ** -0.5
-
-        self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj = nn.Conv2d(dim, dim, kernel_size=1)
-        self.proj_drop = nn.Dropout(proj_drop)
-        self.lepe = nn.Conv2d(dim, dim, kernel_size=side_dwconv, stride=1, padding=side_dwconv//2, groups=dim) if side_dwconv > 0 else \
-                    lambda x: torch.zeros_like(x)
-
-    def forward(self, x:torch.Tensor):
-        """
-        args:
-            x: NCHW tensor
-        return:
-            NCHW tensor
-        """
-        B, C, H, W = x.size()
-        q, k, v = self.qkv.forward(x).chunk(3, dim=1) # B, C, H, W
-
-        attn = q.view(B, self.num_heads, self.head_dim, H*W).transpose(-1, -2) @ \
-               k.view(B, self.num_heads, self.head_dim, H*W)
-        attn = torch.softmax(attn*self.scale, dim=-1)
-        attn = self.attn_drop(attn)
-
-        # (B, nhead, HW, HW) @ (B, nhead, HW, head_dim) -> (B, nhead, HW, head_dim)
-        output:torch.Tensor = attn @ v.view(B, self.num_heads, self.head_dim, H*W).transpose(-1, -2)
-        output = output.permute(0, 1, 3, 2).reshape(B, C, H, W)
-        output = output + self.lepe(v)
-
-        output = self.proj_drop(self.proj(output))
-
-        return output

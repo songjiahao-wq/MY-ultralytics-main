@@ -73,7 +73,7 @@ class Transformer(nn.Module):
         return out
 
 class MobileViTAttention(nn.Module):
-    def __init__(self,in_channel=3,dim=512,kernel_size=3,patch_size=7):
+    def __init__(self,in_channel=3,c2 = 512,dim=512,kernel_size=3,patch_size=7):
         super().__init__()
         self.ph,self.pw=patch_size,patch_size
         self.conv1=nn.Conv2d(in_channel,in_channel,kernel_size=kernel_size,padding=kernel_size//2)
@@ -106,7 +106,7 @@ class MobileViTAttention(nn.Module):
 
 if __name__ == '__main__':
     m=MobileViTAttention()
-    input=torch.randn(1,3,49,49)
+    input=torch.randn(1,50,49,49)
     output=m(input)
     print(output.shape)
     
