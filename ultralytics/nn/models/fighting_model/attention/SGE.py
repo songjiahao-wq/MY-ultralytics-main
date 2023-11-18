@@ -7,7 +7,7 @@ from torch.nn import init
 
 class SpatialGroupEnhance(nn.Module):
 
-    def __init__(self, groups):
+    def __init__(self, c1,c2,groups):
         super().__init__()
         self.groups=groups
         self.avg_pool = nn.AdaptiveAvgPool2d(1)

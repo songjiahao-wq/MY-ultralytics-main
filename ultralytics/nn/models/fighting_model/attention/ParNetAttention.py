@@ -7,7 +7,7 @@ from torch.nn import init
 
 class ParNetAttention(nn.Module):
 
-    def __init__(self, channel=512):
+    def __init__(self, channel=512, c2=512):
         super().__init__()
         self.sse = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
