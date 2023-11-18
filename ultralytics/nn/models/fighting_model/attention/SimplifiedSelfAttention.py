@@ -27,8 +27,6 @@ class SimplifiedScaledDotProductAttention(nn.Module):
         self.fc_o = nn.Linear(h * self.d_v, d_model)
         self.dropout=nn.Dropout(dropout)
 
-
-
         self.init_weights()
 
 

@@ -70,16 +70,18 @@ from ultralytics.nn.models.fighting_model.conv.HorNet import gnconv  # use: gnco
 """
 Args:c1,c2
 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock',CoordAtt,CrissCrossAttention,deformable_LKA_Attention_experimental
-deformable_LKA_Attention, ECAAttention, EMAU, EVCBlock, GAMAttention, LKA_Attention, MobileViTAttention
+deformable_LKA_Attention, ECAAttention, EMAU, EVCBlock, GAMAttention, LKA_Attention, MobileViTAttention, ParNetAttention,
+PSA, S2Attention, SEAttention, SpatialGroupEnhance, ShuffleAttention, SimAM, SKAttention, TripletAttention
 """
 """
 Args:d_head
 AxialImageTransformer,DAModule,LocalAttention,EMSA ,ExternalAttention, FocusedLinearAttention, GFNet, HaloAttention,
-MOATransformer
+MOATransformer, MobileViTv2Attention, MUSEAttention, OutlookAttention, SimplifiedScaledDotProductAttention, UFOAttention,
+WeightedPermuteMLP, ScaledDotProductAttention
 """
 """
 Args:other
-DoubleAttention 
+DoubleAttention , ResidualAttention
 """
 
 __all__ = ( 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock','DoubleAttention', 'AxialImageTransformer',
@@ -92,6 +94,6 @@ __all__ = ( 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock','DoubleAtt
            'MUSEAttention', 'OutlookAttention', 'ParNetAttention', 'PSA', 'ResidualAttention', 'S2Attention',
            'SEAttention', 'SpatialGroupEnhance',
            'ShuffleAttention', 'SimAM', 'SimplifiedScaledDotProductAttention', 'SKAttention', 'TripletAttention',
-           'UFOAttention', 'WeightedPermuteMLP', \
+           'UFOAttention', 'WeightedPermuteMLP',
         'ScaledDotProductAttention'
             )

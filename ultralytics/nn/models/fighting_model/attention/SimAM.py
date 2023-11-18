@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class SimAM(torch.nn.Module):
-    def __init__(self, channels = None, e_lambda = 1e-4):
+    def __init__(self, channels = None,c2=512, e_lambda = 1e-4):
         super(SimAM, self).__init__()
 
         self.activaton = nn.Sigmoid()

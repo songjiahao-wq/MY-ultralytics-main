@@ -7,7 +7,7 @@ from torch.nn import init
 
 class PSA(nn.Module):
 
-    def __init__(self, channel=512,reduction=4,S=4):
+    def __init__(self, channel=512,c2=512,reduction=4,S=4):
         super().__init__()
         self.S=S
 
