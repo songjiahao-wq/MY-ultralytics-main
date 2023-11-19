@@ -49,6 +49,7 @@ from ultralytics.nn.models.fighting_model.attention.SKAttention import SKAttenti
 from ultralytics.nn.models.fighting_model.attention.TripletAttention import TripletAttention
 from ultralytics.nn.models.fighting_model.attention.UFOAttention import UFOAttention
 from ultralytics.nn.models.fighting_model.attention.ViP import WeightedPermuteMLP
+#from ultralytics.nn.models.add_models.add_block import EMA
 
 # add ATT end ------------------------------------
 from add.cv_attention.EffectiveSE import EffectiveSEModule
@@ -71,7 +72,7 @@ from ultralytics.nn.models.fighting_model.conv.HorNet import gnconv  # use: gnco
 Args:c1,c2
 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock',CoordAtt,CrissCrossAttention,deformable_LKA_Attention_experimental
 deformable_LKA_Attention, ECAAttention, EMAU, EVCBlock, GAMAttention, LKA_Attention, MobileViTAttention, ParNetAttention,
-PSA, S2Attention, SEAttention, SpatialGroupEnhance, ShuffleAttention, SimAM, SKAttention, TripletAttention
+PSA, S2Attention, SEAttention, SpatialGroupEnhance, ShuffleAttention, SimAM, SKAttention, TripletAttention, EMA
 """
 """
 Args:d_head
@@ -84,7 +85,7 @@ Args:other
 DoubleAttention , ResidualAttention
 """
 
-__all__ = ( 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock','DoubleAttention', 'AxialImageTransformer',
+__att__ = ( 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock','DoubleAttention', 'AxialImageTransformer',
             'CoordAtt', 'CrissCrossAttention',
            'deformable_LKA_Attention_experimental', 'deformable_LKA_Attention', 'DAModule', 'LocalAttention',
            'ECAAttention', 'EMAU', 'EMSA',
@@ -95,5 +96,5 @@ __all__ = ( 'CBAMBlock','AttentionLePE','ACmix','AFT_FULL','BAMBlock','DoubleAtt
            'SEAttention', 'SpatialGroupEnhance',
            'ShuffleAttention', 'SimAM', 'SimplifiedScaledDotProductAttention', 'SKAttention', 'TripletAttention',
            'UFOAttention', 'WeightedPermuteMLP',
-        'ScaledDotProductAttention'
+        'ScaledDotProductAttention', 'EMA'
             )

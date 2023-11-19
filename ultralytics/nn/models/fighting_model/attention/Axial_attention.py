@@ -361,5 +361,6 @@ if __name__ == '__main__':
         depth = 12,
         reversible = True
     )
+    print(model)
     outputs = model(input)
     print(outputs.shape)

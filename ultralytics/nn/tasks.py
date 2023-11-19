@@ -960,17 +960,22 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 args.insert(2, n)  # number of repeats
                 n = 1
 
+
         # """**************add Attention***************"""
         elif m in {GAMAttention, SpectralAttention, SoftThresholdAttentionResidual,
                    MultiSpectralAttentionLayer, CBAM, EffectiveSEModule,
                    CAMConv, CAConv, CBAMConv, RFAConv, LightweightSPPFA, SPPA_CBAM, SPPFC, PSAMix,
-                   ResidualGroupConv, PSAModule_s,
+                   ResidualGroupConv, PSAModule_s, EMA,
                    DyMCAConv, DyCAConv, CAConv2, SKConv, GSConv, VoVGSCSP, SPPCSPC, deformable_LKA_Attention,
-                   deformable_LKA_Attention_experimental}:
+                   deformable_LKA_Attention_experimental, SPD_Conv}:
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if not output
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
             args = [c1, c2, *args[1:]]
+        elif m is nn.ConvTranspose2d:
+            if len(args) >= 7:
+                args[6] = make_divisible(args[6] * width, 8)
+                # args[6] = math.gcd(c1, c2)
         elif m is RepGhostBottleneck:
             c1, mid, c2 = ch[f],args[1], args[2]
             mid = make_divisible(mid * width, 4)

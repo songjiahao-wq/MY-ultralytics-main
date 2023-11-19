@@ -6,7 +6,7 @@ import math
 import numpy as np
 import torchvision
 from torch.nn.parameter import Parameter
-from ultralytics.nn.import_module import ECAAttention
+from ultralytics.nn.models.fighting_model.attention.ECAAttention import ECAAttention
 
 # from add_models.experimental import MixConv2d
 class MixConv2d(nn.Module):

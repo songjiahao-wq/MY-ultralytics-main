@@ -6,7 +6,6 @@ from pathlib import Path
 #运行的时候需要修改yolo里Detect/foward的输出
 # Change the working directory to 'run/'
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#"/home/lvting/A_lvting/MY-YOLOv8/ultralytics/models/config/improve/"
 config_directory = r"/home/lvting/A_lvting/MY-YOLOv8/ultralytics/models/config/improve/"
 config_files = os.listdir(config_directory)
 
