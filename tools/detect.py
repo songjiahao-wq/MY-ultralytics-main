@@ -40,3 +40,12 @@ if __name__ == '__main__':
                 cv2.imwrite('crop/'+new_filename,resized_img)
                 cv2.imshow('a', resized_img)
                 cv2.waitKey(0)
+"""
+from ultralytics import YOLO
+
+# Load a pretrained YOLOv8n model
+model = YOLO('yolov8n.pt')
+
+# Run inference on 'bus.jpg' with arguments
+model.predict('bus.jpg', save=True, imgsz=320, conf=0.5)
+"""
