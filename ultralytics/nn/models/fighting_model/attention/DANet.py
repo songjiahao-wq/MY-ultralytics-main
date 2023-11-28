@@ -2,8 +2,8 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import init
-from models.Models.fighting_model.attention.SelfAttention import ScaledDotProductAttention
-from models.Models.fighting_model.attention.SimplifiedSelfAttention import SimplifiedScaledDotProductAttention
+from ultralytics.nn.models.fighting_model.attention.SelfAttention import ScaledDotProductAttention
+from ultralytics.nn.models.fighting_model.attention.SimplifiedSelfAttention import SimplifiedScaledDotProductAttention
 
 class PositionAttentionModule(nn.Module):
 
@@ -41,8 +41,8 @@ class DAModule(nn.Module):
 
     def __init__(self,d_model=512,kernel_size=3,H=7,W=7):
         super().__init__()
-        self.position_attention_module=PositionAttentionModule(d_model=512,kernel_size=3,H=7,W=7)
-        self.channel_attention_module=ChannelAttentionModule(d_model=512,kernel_size=3,H=7,W=7)
+        self.position_attention_module=PositionAttentionModule(d_model=d_model,kernel_size=kernel_size,H=H,W=W)
+        self.channel_attention_module=ChannelAttentionModule(d_model=d_model,kernel_size=kernel_size,H=H,W=W)
     
     def forward(self,input):
         bs,c,h,w=input.shape
@@ -54,6 +54,6 @@ class DAModule(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,512,7,7)
-    danet=DAModule(d_model=512,kernel_size=3,H=7,W=7)
+    input=torch.randn(1,512,20,20)
+    danet=DAModule(d_model=512,kernel_size=3,H=20,W=20)
     print(danet(input).shape)

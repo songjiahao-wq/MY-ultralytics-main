@@ -57,7 +57,7 @@ class DoubleAttention(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,512,7,7)
+    input=torch.randn(1,512,7,7)
     a2 = DoubleAttention(512,128,128,True)
     output=a2(input)
     print(output.shape)

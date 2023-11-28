@@ -11,7 +11,7 @@ import numpy as np
 import torch.nn.functional as F
 from collections import OrderedDict, namedtuple
 from timm.models.layers import DropPath
-from ultralytics.nn.import_module import *
+from ultralytics.nn.import_module import AttentionLePE,ODConv2d, PSAMix, SEWeightModule
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
     """Pad to 'same' shape outputs."""
@@ -2450,6 +2450,34 @@ class CoordConv(nn.Module):
         x = self.conv(x)
         return x
 
+class DepthwiseSeparableConv(nn.Module):
+    def __init__(self, c1, c2, k=1, s=1, p=0, g=1, act=True):
+        super().__init__()
+        # Depthwise convolution
+        self.depthwise = nn.Conv2d(c1, c1, k, s, groups=c1, padding=p)
+        # Pointwise convolution
+        self.pointwise = nn.Conv2d(c1, c2, 1, 1, 0)
+        self.act = nn.ReLU() if act else nn.Identity()
+        self.groups = g
+        self.channel_shuffle = nn.ChannelShuffle(3)
+    def forward(self, x):
+        x = self.depthwise(x)
+        x = self.pointwise(x)
+        return self.act(x)
+
+class SPD_Conv(nn.Module):
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True, reduction=1):  # ch_in, ch_out, kernel, stride, padding, groups
+        super().__init__()
+        if p is None:
+            p = (k - 1) // 2  # 自动计算padding
+        self.reduction_conv = nn.Conv2d(c1, c1//reduction, 1, 1, 0)  # 降维
+        self.depthwise_separable_conv = DepthwiseSeparableConv(c1//reduction * 4, c2, k, s, p, g, act=act)
+
+    def forward(self, x):
+        b, c, h, w = x.size()
+        x = self.reduction_conv(x)
+        x = torch.cat([x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]], 1)
+        return self.depthwise_separable_conv(x)
 
 if __name__ == "__main__":
     x = torch.randn(2, 64, 20, 20)
