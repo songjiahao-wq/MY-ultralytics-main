@@ -33,6 +33,33 @@ from ultralytics.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel,
                                            strip_optimizer)
 
 
+class AutomaticWeightedLoss(nn.Module):
+    """automatically weighted multi-task loss
+
+    Params：
+        num: int，the number of loss
+        x: multi-task loss
+    Examples：
+        loss1=1
+        loss2=2
+        awl = AutomaticWeightedLoss(2)
+        loss_sum = awl(loss1, loss2)
+    """
+
+    def __init__(self, num=2):
+        super(AutomaticWeightedLoss, self).__init__()
+        params = torch.ones(num, requires_grad=True)
+        self.params = torch.nn.Parameter(params, requires_grad=True)
+
+    def forward(self, *x):
+        # print(self.params)
+        loss_sum = 0
+        for i, loss in enumerate(x):
+            loss_sum += 0.5 / (self.params[i] ** 2) * loss + torch.log(1 + self.params[i] ** 2)
+        return loss_sum
+
+
+awl = AutomaticWeightedLoss(3)
 class BaseTrainer:
     """
     BaseTrainer.
@@ -656,7 +683,7 @@ class BaseTrainer:
                     g[1].append(param)
                 else:  # weight (with decay)
                     g[0].append(param)
-
+        g[0].append(awl.cuda().params) # add new weight
         if name in ('Adam', 'Adamax', 'AdamW', 'NAdam', 'RAdam'):
             optimizer = getattr(optim, name, optim.Adam)(g[2], lr=lr, betas=(momentum, 0.999), weight_decay=0.0)
         elif name == 'RMSProp':
