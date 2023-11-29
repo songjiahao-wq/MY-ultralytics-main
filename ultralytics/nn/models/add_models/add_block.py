@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from collections import OrderedDict, namedtuple
 from timm.models.layers import DropPath
 from ultralytics.nn.import_module import AttentionLePE,ODConv2d, PSAMix, SEWeightModule
-
+from ultralytics.nn.import_module import *
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
     """Pad to 'same' shape outputs."""
     if d > 1:
@@ -1495,7 +1495,7 @@ class CAConv(nn.Module):
         self.conv = nn.Sequential(nn.Conv2d(inp, oup, kernel_size, padding=kernel_size // 2, stride=stride),
                                   nn.BatchNorm2d(oup),
                                   nn.ReLU())
-
+        self.EffSE = EffectiveSEModule
     def forward(self, x):
         identity = x
 
