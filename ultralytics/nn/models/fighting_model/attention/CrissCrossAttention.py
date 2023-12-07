@@ -14,7 +14,7 @@ def INF(B,H,W):
 
 class CrissCrossAttention(nn.Module):
     """ Criss-Cross Attention Module"""
-    def __init__(self, in_dim):
+    def __init__(self, in_dim, c2 = 512):
         super(CrissCrossAttention,self).__init__()
         self.query_conv = nn.Conv2d(in_channels=in_dim, out_channels=in_dim//8, kernel_size=1)
         self.key_conv = nn.Conv2d(in_channels=in_dim, out_channels=in_dim//8, kernel_size=1)

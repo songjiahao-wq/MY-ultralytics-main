@@ -54,7 +54,7 @@ class SpatialAttention(nn.Module):
 
 class BAMBlock(nn.Module):
 
-    def __init__(self, channel=512, c2=512, reduction=16,dia_val=2):
+    def __init__(self, channel=512, c2=512, reduction=16,dia_val=1):
         super().__init__()
         self.ca=ChannelAttention(channel=channel,reduction=reduction)
         self.sa=SpatialAttention(channel=channel,reduction=reduction,dia_val=dia_val)
@@ -85,8 +85,8 @@ class BAMBlock(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,512,7,7)
-    bam = BAMBlock(channel=512,reduction=16,dia_val=2)
+    input=torch.randn(2,512,20,20)
+    bam = BAMBlock(channel=512,reduction=16,dia_val=1)
     output=bam(input)
     print(output.shape)
 
