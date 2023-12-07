@@ -1,0 +1,24 @@
+from ultralytics import YOLO
+import torch
+import os
+from pathlib import Path
+import logging
+
+# Change the working directory to 'run/'
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if __name__ == '__main__':
+
+    config_directory = r"ultralytics/cfg/models/config/attention"
+    config_files = os.listdir(config_directory)
+    for config_file in config_files:
+        if config_file.endswith('.yaml'):
+            config_path = os.path.join(config_directory, config_file)
+            config_path = config_path.replace('yolov8-', 'yolov8n-')
+            # print(f"Training model with config: {config_path}")
+            try:
+                model = YOLO(config_path)  # 从头开始构建新模型
+            except Exception as e:
+                print(e)
+                print(f"error run yaml{config_path}")
+                continue
+

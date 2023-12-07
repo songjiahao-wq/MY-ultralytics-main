@@ -6,7 +6,7 @@ from torch.nn import init
 
 class AFT_FULL(nn.Module):
 
-    def __init__(self, d_model, c2, n=49, simple=False):
+    def __init__(self, d_model, c2=512, n=49, simple=False):
 
         super(AFT_FULL, self).__init__()
         self.fc_q = nn.Linear(d_model, d_model)

@@ -31,35 +31,9 @@ from ultralytics.utils.dist import ddp_cleanup, generate_ddp_command
 from ultralytics.utils.files import get_latest_run
 from ultralytics.utils.torch_utils import (EarlyStopping, ModelEMA, de_parallel, init_seeds, one_cycle, select_device,
                                            strip_optimizer)
+from ultralytics.utils.loss import awl
 
 
-class AutomaticWeightedLoss(nn.Module):
-    """automatically weighted multi-task loss
-
-    Params：
-        num: int，the number of loss
-        x: multi-task loss
-    Examples：
-        loss1=1
-        loss2=2
-        awl = AutomaticWeightedLoss(2)
-        loss_sum = awl(loss1, loss2)
-    """
-
-    def __init__(self, num=2):
-        super(AutomaticWeightedLoss, self).__init__()
-        params = torch.ones(num, requires_grad=True)
-        self.params = torch.nn.Parameter(params, requires_grad=True)
-
-    def forward(self, *x):
-        # print(self.params)
-        loss_sum = 0
-        for i, loss in enumerate(x):
-            loss_sum += 0.5 / (self.params[i] ** 2) * loss + torch.log(1 + self.params[i] ** 2)
-        return loss_sum
-
-
-awl = AutomaticWeightedLoss(3)
 class BaseTrainer:
     """
     BaseTrainer.
