@@ -23,7 +23,7 @@ def spatial_shift2(x):
 
 
 class SplitAttention(nn.Module):
-    def __init__(self,channel=512,k=3):
+    def __init__(self,channel=256,k=3):
         super().__init__()
         self.channel=channel
         self.k=k
@@ -47,11 +47,11 @@ class SplitAttention(nn.Module):
 
 class S2Attention(nn.Module):
 
-    def __init__(self, channels=512 ,c2=512):
+    def __init__(self, channels=256 ,c2=512):
         super().__init__()
         self.mlp1 = nn.Linear(channels,channels*3)
         self.mlp2 = nn.Linear(channels,channels)
-        self.split_attention = SplitAttention()
+        self.split_attention = SplitAttention(channel = channels)
 
     def forward(self, x):
         b,c,w,h = x.size()
@@ -70,8 +70,8 @@ class S2Attention(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,512,7,7)
-    s2att = S2Attention(channels=512)
+    input=torch.randn(1,128,20,20)
+    s2att = S2Attention(channels=128)
     output=s2att(input)
     print(output.shape)
 

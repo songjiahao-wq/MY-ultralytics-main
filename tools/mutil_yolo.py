@@ -8,7 +8,7 @@ import traceback
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if __name__ == '__main__':
 
-    config_directory = r"ultralytics/cfg/models/config/attention"
+    config_directory = r"ultralytics/cfg/models/config/attention2"
     config_files = os.listdir(config_directory)
     for config_file in config_files:
         if config_file.endswith('.yaml'):

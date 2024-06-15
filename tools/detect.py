@@ -3,11 +3,13 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
-from ultralytics.yolo.utils.plotting import Annotator, colors, save_one_box
+import os
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#from ultralytics.yolo.utils.plotting import Annotator, colors, save_one_box
 
 if __name__ == '__main__':
     model = YOLO("./yolov8n.pt")
-    pred_id=1
+    pred_id=0
     if pred_id==0:
         # 预测模型
         results = model.predict(source="ultralytics/assets/zidane.jpg", classes=[0], conf=0.5, save=True)[0]  # 0是摄像头，详细参数见3.2
