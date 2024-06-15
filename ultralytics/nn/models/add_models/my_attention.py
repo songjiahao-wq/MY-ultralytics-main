@@ -287,8 +287,6 @@ class SPPA_CBAM(nn.Module):
 
 # SPPFC**************************************
 """通过多个串行卷积层"""
-
-
 class SPPFC(nn.Module):
     # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
     def __init__(self, c1, c2, k=[3, 3, 3], reduction=16, group=True,
