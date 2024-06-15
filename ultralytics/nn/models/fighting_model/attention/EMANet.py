@@ -19,7 +19,7 @@ class EMAU(nn.Module):
         stage_num (int): The iteration number for EM.
     '''
 
-    def __init__(self, c,c2, k, stage_num=3):
+    def __init__(self, c,c2, k=3, stage_num=3):
         super(EMAU, self).__init__()
         self.stage_num = stage_num
 
@@ -72,7 +72,7 @@ class EMAU(nn.Module):
         x = x + idn
         x = F.relu(x, inplace=True)
 
-        return x, mu
+        return x
 
     def _l2norm(self, inp, dim):
         '''Normlize the inp tensor with l2-norm.
@@ -90,6 +90,6 @@ class EMAU(nn.Module):
         return inp / (1e-6 + inp.norm(dim=dim, keepdim=True))
 if __name__ == '__main__':
     input=torch.randn(1,512,20,20)
-    eca = EMAU(512, 64, stage_num=3)
+    eca = EMAU(512, 512, k=3,stage_num=3)
     output,mu=eca(input)
     print(output.shape)

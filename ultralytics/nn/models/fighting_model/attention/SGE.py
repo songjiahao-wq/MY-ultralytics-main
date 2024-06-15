@@ -7,7 +7,7 @@ from torch.nn import init
 
 class SpatialGroupEnhance(nn.Module):
 
-    def __init__(self, c1,c2,groups):
+    def __init__(self, c1,c2,groups=8):
         super().__init__()
         self.groups=groups
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -52,8 +52,8 @@ class SpatialGroupEnhance(nn.Module):
 
 
 if __name__ == '__main__':
-    input=torch.randn(50,512,7,7)
-    sge = SpatialGroupEnhance(groups=8)
+    input=torch.randn(50,512,20,20)
+    sge = SpatialGroupEnhance(512,512,groups=8)
     output=sge(input)
     print(output.shape)
 
