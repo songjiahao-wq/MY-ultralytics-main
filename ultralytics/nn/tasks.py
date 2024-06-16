@@ -985,6 +985,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is convnextv2_att:
             c2 = args[0]
             # args = args[1:]
+        elif m is MSFFM_AttentionModule:
+            c2 = ch[-1]
         elif m is GGhostRegNet:
             widths.append(args[0])
             if args[1] != 0:
