@@ -144,6 +144,7 @@ class BaseModel(nn.Module):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
+            print(m)
             x = m(x)  # run
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
@@ -210,6 +211,10 @@ class BaseModel(nn.Module):
                 if isinstance(m, RepConv):
                     m.fuse_convs()
                     m.forward = m.forward_fuse  # update forward
+                if hasattr(m, ('RepGhostModule')):
+                    m.switch_to_deploy()
+                if hasattr(m, 'switch_to_deploy'):
+                    m.switch_to_deploy()
                 if isinstance(m, RepVGGDW):
                     m.fuse()
                     m.forward = m.forward_fuse
@@ -960,6 +965,15 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 args.insert(2, n)  # number of repeats
                 n = 1
 
+        # """**************add C2f-improve****************"""
+        if m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
+            c1, c2 = ch[f], args[0]
+            if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, *args[1:]]
+            if m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
+                args.insert(2, n)  # number of repeats
+                n = 1
 
         # """**************add Attention***************"""
         elif m in {GAMAttention, SpectralAttention, SoftThresholdAttentionResidual,DoubleAttention, AFT_FULL, AxialImageTransformer,
@@ -968,7 +982,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                    ResidualGroupConv, PSAModule_s, EMA, deformable_LKA_Attention_experimental, deformable_LKA_Attention, DAModule, EMAU, LKA_Attention,
                    DyMCAConv, DyCAConv, CAConv2, SKConv, GSConv, VoVGSCSP, SPPCSPC, deformable_LKA_Attention, MobileViTAttention, ParNetAttention,PSA,
                    S2Attention,SKAttention, SpatialGroupEnhance, TripletAttention, SEAttention, ShuffleAttention,
-                   deformable_LKA_Attention_experimental, SPD_Conv, EVCBlock, C2f_Bottleneck_ATT}:
+                   deformable_LKA_Attention_experimental, SPD_Conv, EVCBlock}:
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if not output
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
