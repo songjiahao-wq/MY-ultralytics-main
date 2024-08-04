@@ -1,6 +1,6 @@
 import torch
 from torch import nn as nn
-from timm.models.layers.create_act import create_act_layer
+from timm.models.layers import create_act_layer
 
 
 class EffectiveSEModule(nn.Module):
