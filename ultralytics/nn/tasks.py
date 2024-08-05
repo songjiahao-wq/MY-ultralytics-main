@@ -144,7 +144,6 @@ class BaseModel(nn.Module):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
-            print(m,x.shape)
             x = m(x)  # run
             y.append(x if m.i in self.save else None)  # save output
             if visualize:
@@ -967,7 +966,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 n = 1
 
         # """**************add C2f-improve****************"""
-        if m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
+        elif m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
