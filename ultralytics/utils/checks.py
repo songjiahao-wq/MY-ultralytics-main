@@ -29,11 +29,13 @@ from ultralytics.utils import (
     IS_PIP_PACKAGE,
     LINUX,
     LOGGER,
+    MACOS,
     ONLINE,
     PYTHON_VERSION,
     ROOT,
     TORCHVISION_VERSION,
     USER_CONFIG_DIR,
+    WINDOWS,
     Retry,
     SimpleNamespace,
     ThreadingLocked,
@@ -222,6 +224,13 @@ def check_version(
                 return False
 
     if not required:  # if required is '' or None
+        return True
+
+    if "sys_platform" in required and (  # i.e. required='<2.4.0,>=1.8.0; sys_platform == "win32"'
+        (WINDOWS and "win32" not in required)
+        or (LINUX and "linux" not in required)
+        or (MACOS and "macos" not in required and "darwin" not in required)
+    ):
         return True
 
     op = ""
@@ -422,6 +431,7 @@ def check_torchvision():
     """
     # Compatibility table
     compatibility_table = {
+        "2.4": ["0.19"],
         "2.3": ["0.18"],
         "2.2": ["0.17"],
         "2.1": ["0.16"],

@@ -50,6 +50,7 @@ class HUBTrainingSession:
         self.model = None
         self.model_url = None
         self.model_file = None
+        self.train_args = None
 
         # Parse input
         api_key, model_id, self.filename = self._parse_identifier(identifier)
@@ -345,7 +346,7 @@ class HUBTrainingSession:
         """
         weights = Path(weights)
         if not weights.is_file():
-            last = weights.with_name("last" + weights.suffix)
+            last = weights.with_name(f"last{weights.suffix}")
             if final and last.is_file():
                 LOGGER.warning(
                     f"{PREFIX} WARNING ⚠️ Model 'best.pt' not found, copying 'last.pt' to 'best.pt' and uploading. "
