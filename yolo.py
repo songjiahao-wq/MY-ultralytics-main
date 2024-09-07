@@ -2,12 +2,13 @@ from ultralytics import YOLO
 from ultralytics.nn.tasks import DetectionModel
 import torch
 if __name__ == '__main__':
-    DetectionModel(cfg="ultralytics/cfg/models/v10/yolov10b.yaml", nc=80)
+    cfg = "ultralytics/cfg/models/config/improve/yolov8s-acb.yaml"
+    DetectionModel(cfg=cfg, nc=80)
     # 加载模型
     # Create model
     device = torch.device('cuda:0')
     im = torch.rand(1, 3, 640, 640).to(device)
-    model = YOLO("ultralytics/cfg/models/v10/yolov10b.yaml")  # 从头开始构建新模型
+    model = YOLO(cfg)  # 从头开始构建新模型
     model.info()
     model.fuse()
     # model(im, profile=True)
