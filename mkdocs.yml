@@ -211,8 +211,6 @@ nav:
           - solutions/index.md
       - Guides:
           - guides/index.md
-      - Explorer:
-          - datasets/explorer/index.md
   - Modes:
       - modes/index.md
       - Train: modes/train.md
@@ -221,6 +219,13 @@ nav:
       - Export: modes/export.md
       - Track: modes/track.md
       - Benchmark: modes/benchmark.md
+      - Tasks:
+          - tasks/index.md
+          - Detect: tasks/detect.md
+          - Segment: tasks/segment.md
+          - Classify: tasks/classify.md
+          - Pose: tasks/pose.md
+          - OBB: tasks/obb.md
   - Tasks:
       - tasks/index.md
       - Detect: tasks/detect.md
@@ -228,6 +233,14 @@ nav:
       - Classify: tasks/classify.md
       - Pose: tasks/pose.md
       - OBB: tasks/obb.md
+      - Modes:
+          - modes/index.md
+          - Train: modes/train.md
+          - Val: modes/val.md
+          - Predict: modes/predict.md
+          - Export: modes/export.md
+          - Track: modes/track.md
+          - Benchmark: modes/benchmark.md
   - Models:
       - models/index.md
       - YOLOv3: models/yolov3.md
@@ -238,6 +251,7 @@ nav:
       - YOLOv8: models/yolov8.md
       - YOLOv9: models/yolov9.md
       - YOLOv10: models/yolov10.md
+      - YOLO11: models/yolo11.md
       - SAM (Segment Anything Model): models/sam.md
       - SAM 2 (Segment Anything Model 2): models/sam-2.md
       - MobileSAM (Mobile Segment Anything Model): models/mobile-sam.md
@@ -281,6 +295,7 @@ nav:
           - COCO: datasets/pose/coco.md
           - COCO8-pose: datasets/pose/coco8-pose.md
           - Tiger-pose: datasets/pose/tiger-pose.md
+          - Hand-keypoints: datasets/pose/hand-keypoints.md
       - Classification:
           - datasets/classify/index.md
           - Caltech 101: datasets/classify/caltech101.md

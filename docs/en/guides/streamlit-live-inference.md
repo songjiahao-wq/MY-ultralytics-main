@@ -8,7 +8,7 @@ keywords: Streamlit, YOLOv8, Real-time Object Detection, Streamlit Application, 
 
 ## Introduction
 
-Streamlit makes it simple to build and deploy interactive web applications. Combining this with Ultralytics YOLOv8 allows for real-time object detection and analysis directly in your browser. YOLOv8 high accuracy and speed ensure seamless performance for live video streams, making it ideal for applications in security, retail, and beyond.
+Streamlit makes it simple to build and deploy interactive web applications. Combining this with Ultralytics YOLOv8 allows for real-time [object detection](https://www.ultralytics.com/glossary/object-detection) and analysis directly in your browser. YOLOv8 high accuracy and speed ensure seamless performance for live video streams, making it ideal for applications in security, retail, and beyond.
 
 <p align="center">
   <br>
@@ -18,7 +18,7 @@ Streamlit makes it simple to build and deploy interactive web applications. Comb
     allowfullscreen>
   </iframe>
   <br>
-  <strong>Watch:</strong> How to Use Streamlit with Ultralytics for Real-Time Computer Vision in Your Browser
+  <strong>Watch:</strong> How to Use Streamlit with Ultralytics for Real-Time [Computer Vision](https://www.ultralytics.com/glossary/computer-vision-cv) in Your Browser
 </p>
 
 |                                                                Aquaculture                                                                 |                                                          Animals husbandry                                                           |
@@ -128,7 +128,7 @@ For more details on the practical setup, refer to the [Streamlit Application Cod
 
 Using Ultralytics YOLOv8 with Streamlit for real-time object detection offers several advantages:
 
-- **Seamless Real-Time Detection**: Achieve high-accuracy, real-time object detection directly from webcam feeds.
+- **Seamless Real-Time Detection**: Achieve high-[accuracy](https://www.ultralytics.com/glossary/accuracy), real-time object detection directly from webcam feeds.
 - **User-Friendly Interface**: Streamlit's intuitive interface allows easy use and deployment without extensive technical knowledge.
 - **Resource Efficiency**: YOLOv8's optimized algorithms ensure high-speed processing with minimal computational resources.
 
@@ -152,7 +152,7 @@ Real-time object detection using Streamlit and Ultralytics YOLOv8 can be applied
 - **Retail**: Customer counting, shelf management, and more.
 - **Wildlife and Agriculture**: Monitoring animals and crop conditions.
 
-For more in-depth use cases and examples, explore [Ultralytics Solutions](https://docs.ultralytics.com/solutions).
+For more in-depth use cases and examples, explore [Ultralytics Solutions](https://docs.ultralytics.com/solutions/).
 
 ### How does Ultralytics YOLOv8 compare to other object detection models like YOLOv5 and RCNNs?
 
@@ -162,4 +162,4 @@ Ultralytics YOLOv8 provides several enhancements over prior models like YOLOv5 a
 - **Ease of Use**: Simplified interfaces and deployment.
 - **Resource Efficiency**: Optimized for better speed with minimal computational requirements.
 
-For a comprehensive comparison, check [Ultralytics YOLOv8 Documentation](https://docs.ultralytics.com/models/yolov8) and related blog posts discussing model performance.
+For a comprehensive comparison, check [Ultralytics YOLOv8 Documentation](https://docs.ultralytics.com/models/yolov8/) and related blog posts discussing model performance.

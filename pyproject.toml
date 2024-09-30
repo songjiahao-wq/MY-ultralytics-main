@@ -26,20 +26,18 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ultralytics"
 dynamic = ["version"]
-description = "Ultralytics YOLOv8 for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
+description = "Ultralytics YOLO for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { "text" = "AGPL-3.0" }
-keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv8", "HUB", "Ultralytics"]
+keywords = ["machine-learning", "deep-learning", "computer-vision", "ML", "DL", "AI", "YOLO", "YOLOv3", "YOLOv5", "YOLOv8", "YOLOv9", "YOLOv10", "YOLO11", "HUB", "Ultralytics"]
 authors = [
-    { name = "Glenn Jocher" },
-    { name = "Ayush Chaurasia" },
-    { name = "Jing Qiu" }
+    { name = "Glenn Jocher", email = "glenn.jocher@ultralytics.com"},
+    { name = "Jing Qiu", email = "jing.qiu@ultralytics.com"},
+    { name = "Ayush Chaurasia" }
 ]
 maintainers = [
-    { name = "Glenn Jocher" },
-    { name = "Ayush Chaurasia" },
-    { name = "Jing Qiu" }
+    { name = "Ultralytics", email = "hello@ultralytics.com" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -120,16 +118,18 @@ logging = [
     "dvclive>=2.12.0",
 ]
 extra = [
-    "hub-sdk>=0.0.8", # Ultralytics HUB
+    "hub-sdk>=0.0.12", # Ultralytics HUB
     "ipython", # interactive notebook
     "albumentations>=1.4.6", # training augmentations
     "pycocotools>=2.0.7", # COCO mAP
 ]
 
 [project.urls]
+"Homepage" = "https://ultralytics.com"
+"Source" = "https://github.com/ultralytics/ultralytics"
+"Documentation" = "https://docs.ultralytics.com"
 "Bug Reports" = "https://github.com/ultralytics/ultralytics/issues"
-"Funding" = "https://ultralytics.com"
-"Source" = "https://github.com/ultralytics/ultralytics/"
+"Changelog" = "https://github.com/ultralytics/ultralytics/releases" 
 
 [project.scripts]
 yolo = "ultralytics.cfg:entrypoint"

@@ -35,7 +35,7 @@ The YOLO command line interface (CLI) allows for simple single-line commands wit
 
     === "Train"
 
-        Train a detection model for 10 epochs with an initial learning_rate of 0.01
+        Train a detection model for 10 [epochs](https://www.ultralytics.com/glossary/epoch) with an initial learning_rate of 0.01
         ```bash
         yolo train data=coco8.yaml model=yolov8n.pt epochs=10 lr0=0.01
         ```
@@ -79,7 +79,7 @@ Where:
 - `MODE` (required) is one of `[train, val, predict, export, track, benchmark]`
 - `ARGS` (optional) are any number of custom `arg=value` pairs like `imgsz=320` that override defaults. For a full list of available `ARGS` see the [Configuration](cfg.md) page and `defaults.yaml`
 
-!!! warning "Warning"
+!!! warning
 
     Arguments must be passed as `arg=val` pairs, split by an equals `=` sign and delimited by spaces ` ` between pairs. Do not use `--` argument prefixes or commas `,` between arguments.
 
@@ -91,7 +91,7 @@ Where:
 
 Train YOLOv8n on the COCO8 dataset for 100 epochs at image size 640. For a full list of available arguments see the [Configuration](cfg.md) page.
 
-!!! example "Example"
+!!! example
 
     === "Train"
 
@@ -109,9 +109,9 @@ Train YOLOv8n on the COCO8 dataset for 100 epochs at image size 640. For a full 
 
 ## Val
 
-Validate trained YOLOv8n model accuracy on the COCO8 dataset. No argument need to passed as the `model` retains its training `data` and arguments as model attributes.
+Validate trained YOLOv8n model [accuracy](https://www.ultralytics.com/glossary/accuracy) on the COCO8 dataset. No arguments are needed as the `model` retains its training `data` and arguments as model attributes.
 
-!!! example "Example"
+!!! example
 
     === "Official"
 
@@ -131,7 +131,7 @@ Validate trained YOLOv8n model accuracy on the COCO8 dataset. No argument need t
 
 Use a trained YOLOv8n model to run predictions on images.
 
-!!! example "Example"
+!!! example
 
     === "Official"
 
@@ -151,7 +151,7 @@ Use a trained YOLOv8n model to run predictions on images.
 
 Export a YOLOv8n model to a different format like ONNX, CoreML, etc.
 
-!!! example "Example"
+!!! example
 
     === "Official"
 
@@ -177,7 +177,7 @@ See full `export` details in the [Export](../modes/export.md) page.
 
 Default arguments can be overridden by simply passing them as arguments in the CLI in `arg=value` pairs.
 
-!!! tip ""
+!!! tip
 
     === "Train"
 
@@ -221,7 +221,7 @@ This will create `default_copy.yaml`, which you can then pass as `cfg=default_co
 
 ### How do I use the Ultralytics YOLOv8 command line interface (CLI) for model training?
 
-To train a YOLOv8 model using the CLI, you can execute a simple one-line command in the terminal. For example, to train a detection model for 10 epochs with a learning rate of 0.01, you would run:
+To train a YOLOv8 model using the CLI, you can execute a simple one-line command in the terminal. For example, to train a detection model for 10 epochs with a [learning rate](https://www.ultralytics.com/glossary/learning-rate) of 0.01, you would run:
 
 ```bash
 yolo train data=coco8.yaml model=yolov8n.pt epochs=10 lr0=0.01
@@ -241,7 +241,7 @@ Each task can be customized with various arguments. For detailed syntax and exam
 
 ### How can I validate the accuracy of a trained YOLOv8 model using the CLI?
 
-To validate a YOLOv8 model's accuracy, use the `val` mode. For example, to validate a pretrained detection model with a batch size of 1 and image size of 640, run:
+To validate a YOLOv8 model's accuracy, use the `val` mode. For example, to validate a pretrained detection model with a [batch size](https://www.ultralytics.com/glossary/batch-size) of 1 and image size of 640, run:
 
 ```bash
 yolo val model=yolov8n.pt data=coco8.yaml batch=1 imgsz=640
