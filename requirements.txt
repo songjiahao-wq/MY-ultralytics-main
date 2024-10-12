@@ -46,3 +46,9 @@ thop>=0.1.1  # FLOPs computation
 # roboflow
 
 setuptools
+
+timm
+psutil
+einops
+fvcore
+scipy
