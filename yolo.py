@@ -2,7 +2,7 @@ from ultralytics import YOLO
 from ultralytics.nn.tasks import DetectionModel
 import torch
 if __name__ == '__main__':
-    cfg = "ultralytics/cfg/models/config/improve/yolov8s-acb.yaml"
+    cfg = "ultralytics/cfg/models/config/improve/yolov8n_RetinexFormer.yaml"
     DetectionModel(cfg=cfg, nc=80)
     # 加载模型
     # Create model

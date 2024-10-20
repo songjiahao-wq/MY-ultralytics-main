@@ -1042,13 +1042,13 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m is C3k2 and scale in "mlx":  # for M/L/X sizes
                 args[3] = True
 
-        # """**************add C2f-improve****************"""
+        # """**************add block****************"""
         elif m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
             args = [c1, c2, *args[1:]]
-            if m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb):
+            if m in (C2f_Bottleneck_ATT, C2f_DBB, C2f_acb, RetinexFormer):
                 args.insert(2, n)  # number of repeats
                 n = 1
 
@@ -1064,6 +1064,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if c2 != nc:  # if not output
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
             args = [c1, c2, *args[1:]]
+
         elif m is nn.ConvTranspose2d:
             if len(args) >= 7:
                 args[6] = make_divisible(args[6] * width, 8)
