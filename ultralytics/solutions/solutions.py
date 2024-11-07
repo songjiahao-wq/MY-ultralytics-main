@@ -1,15 +1,12 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
 from collections import defaultdict
-from pathlib import Path
 
 import cv2
 
 from ultralytics import YOLO
-from ultralytics.utils import LOGGER, yaml_load
+from ultralytics.utils import ASSETS_URL, DEFAULT_CFG_DICT, DEFAULT_SOL_DICT, LOGGER
 from ultralytics.utils.checks import check_imshow, check_requirements
-
-DEFAULT_SOL_CFG_PATH = Path(__file__).resolve().parents[1] / "cfg/solutions/default.yaml"
 
 
 class BaseSolution:
@@ -45,8 +42,12 @@ class BaseSolution:
         >>> solution.display_output(image)
     """
 
-    def __init__(self, **kwargs):
-        """Initializes the BaseSolution class with configuration settings and YOLO model for Ultralytics solutions."""
+    def __init__(self, IS_CLI=False, **kwargs):
+        """
+        Initializes the `BaseSolution` class with configuration settings and the YOLO model for Ultralytics solutions.
+
+        IS_CLI (optional): Enables CLI mode if set.
+        """
         check_requirements("shapely>=2.0.0")
         from shapely.geometry import LineString, Point, Polygon
 
@@ -55,16 +56,30 @@ class BaseSolution:
         self.Point = Point
 
         # Load config and update with args
-        self.CFG = yaml_load(DEFAULT_SOL_CFG_PATH)
-        self.CFG.update(kwargs)
-        LOGGER.info(f"Ultralytics Solutions: ✅ {self.CFG}")
+        DEFAULT_SOL_DICT.update(kwargs)
+        DEFAULT_CFG_DICT.update(kwargs)
+        self.CFG = {**DEFAULT_SOL_DICT, **DEFAULT_CFG_DICT}
+        LOGGER.info(f"Ultralytics Solutions: ✅ {DEFAULT_SOL_DICT}")
 
         self.region = self.CFG["region"]  # Store region data for other classes usage
-        self.line_width = self.CFG["line_width"]  # Store line_width for usage
+        self.line_width = (
+            self.CFG["line_width"] if self.CFG["line_width"] is not None else 2
+        )  # Store line_width for usage
 
         # Load Model and store classes names
+        if self.CFG["model"] is None:
+            self.CFG["model"] = "yolo11n.pt"
         self.model = YOLO(self.CFG["model"])
         self.names = self.model.names
+
+        if IS_CLI:  # for CLI, download the source and init video writer
+            if self.CFG["source"] is None:
+                d_s = "solutions_ci_demo.mp4" if "-pose" not in self.CFG["model"] else "solution_ci_pose_demo.mp4"
+                LOGGER.warning(f"⚠️ WARNING: source not provided. using default source {ASSETS_URL}/{d_s}")
+                from ultralytics.utils.downloads import safe_download
+
+                safe_download(f"{ASSETS_URL}/{d_s}")  # download source from ultralytics assets
+                self.CFG["source"] = d_s  # set default source
 
         # Initialize environment and region setup
         self.env_check = check_imshow(warn=True)

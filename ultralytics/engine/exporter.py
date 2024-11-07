@@ -16,6 +16,7 @@ TensorFlow Lite         | `tflite`                  | yolo11n.tflite
 TensorFlow Edge TPU     | `edgetpu`                 | yolo11n_edgetpu.tflite
 TensorFlow.js           | `tfjs`                    | yolo11n_web_model/
 PaddlePaddle            | `paddle`                  | yolo11n_paddle_model/
+MNN                     | `mnn`                     | yolo11n.mnn
 NCNN                    | `ncnn`                    | yolo11n_ncnn_model/
 
 Requirements:
@@ -41,6 +42,7 @@ Inference:
                          yolo11n.tflite             # TensorFlow Lite
                          yolo11n_edgetpu.tflite     # TensorFlow Edge TPU
                          yolo11n_paddle_model       # PaddlePaddle
+                         yolo11n.mnn                # MNN
                          yolo11n_ncnn_model         # NCNN
 
 TensorFlow.js:
@@ -75,6 +77,7 @@ from ultralytics.utils import (
     ARM64,
     DEFAULT_CFG,
     IS_JETSON,
+    IS_RASPBERRYPI,
     LINUX,
     LOGGER,
     MACOS,
@@ -109,6 +112,7 @@ def export_formats():
         ["TensorFlow Edge TPU", "edgetpu", "_edgetpu.tflite", True, False],
         ["TensorFlow.js", "tfjs", "_web_model", True, False],
         ["PaddlePaddle", "paddle", "_paddle_model", True, True],
+        ["MNN", "mnn", ".mnn", True, True],
         ["NCNN", "ncnn", "_ncnn_model", True, True],
     ]
     return dict(zip(["Format", "Argument", "Suffix", "CPU", "GPU"], zip(*x)))
@@ -190,13 +194,19 @@ class Exporter:
         flags = [x == fmt for x in fmts]
         if sum(flags) != 1:
             raise ValueError(f"Invalid export format='{fmt}'. Valid formats are {fmts}")
-        jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, ncnn = flags  # export booleans
+        jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, mnn, ncnn = (
+            flags  # export booleans
+        )
         is_tf_format = any((saved_model, pb, tflite, edgetpu, tfjs))
 
         # Device
+        dla = None
         if fmt == "engine" and self.args.device is None:
             LOGGER.warning("WARNING ⚠️ TensorRT requires GPU export, automatically assigning device=0")
             self.args.device = "0"
+        if fmt == "engine" and "dla" in str(self.args.device):  # convert int/list to str first
+            dla = self.args.device.split(":")[-1]
+            assert dla in {"0", "1"}, f"Expected self.args.device='dla:0' or 'dla:1, but got {self.args.device}."
         self.device = select_device("cpu" if self.args.device is None else self.args.device)
 
         # Checks
@@ -216,6 +226,8 @@ class Exporter:
         if self.args.optimize:
             assert not ncnn, "optimize=True not compatible with format='ncnn', i.e. use optimize=False"
             assert self.device.type == "cpu", "optimize=True not compatible with cuda devices, i.e. use device='cpu'"
+        if self.args.int8 and tflite:
+            assert not getattr(model, "end2end", False), "TFLite INT8 export not supported for end2end models."
         if edgetpu:
             if not LINUX:
                 raise SystemError("Edge TPU export only supported on Linux. See https://coral.ai/docs/edgetpu/compiler")
@@ -235,6 +247,8 @@ class Exporter:
                 "WARNING ⚠️ INT8 export requires a missing 'data' arg for calibration. "
                 f"Using default 'data={self.args.data}'."
             )
+        if mnn and (IS_RASPBERRYPI or IS_JETSON):
+            raise SystemError("MNN export not supported on Raspberry Pi and NVIDIA Jetson")
         # Input
         im = torch.zeros(self.args.batch, 3, *self.imgsz).to(self.device)
         file = Path(
@@ -309,7 +323,7 @@ class Exporter:
         if jit or ncnn:  # TorchScript
             f[0], _ = self.export_torchscript()
         if engine:  # TensorRT required before ONNX
-            f[1], _ = self.export_engine()
+            f[1], _ = self.export_engine(dla=dla)
         if onnx:  # ONNX
             f[2], _ = self.export_onnx()
         if xml:  # OpenVINO
@@ -329,8 +343,10 @@ class Exporter:
                 f[9], _ = self.export_tfjs()
         if paddle:  # PaddlePaddle
             f[10], _ = self.export_paddle()
+        if mnn:  # MNN
+            f[11], _ = self.export_mnn()
         if ncnn:  # NCNN
-            f[11], _ = self.export_ncnn()
+            f[12], _ = self.export_ncnn()
 
         # Finish
         f = [str(x) for x in f if x]  # filter out '' and None
@@ -453,6 +469,7 @@ class Exporter:
     @try_export
     def export_openvino(self, prefix=colorstr("OpenVINO:")):
         """YOLO OpenVINO export."""
+        # WARNING: numpy>=2.0.0 issue with OpenVINO on macOS https://github.com/ultralytics/ultralytics/pull/17221
         check_requirements(f'openvino{"<=2024.0.0" if ARM64 else ">=2024.0.0"}')  # fix OpenVINO issue on ARM64
         import openvino as ov
 
@@ -534,6 +551,32 @@ class Exporter:
 
         pytorch2paddle(module=self.model, save_dir=f, jit_type="trace", input_examples=[self.im])  # export
         yaml_save(Path(f) / "metadata.yaml", self.metadata)  # add metadata.yaml
+        return f, None
+
+    @try_export
+    def export_mnn(self, prefix=colorstr("MNN:")):
+        """YOLOv8 MNN export using MNN https://github.com/alibaba/MNN."""
+        f_onnx, _ = self.export_onnx()  # get onnx model first
+
+        check_requirements("MNN>=2.9.6")
+        import MNN  # noqa
+        from MNN.tools import mnnconvert
+
+        # Setup and checks
+        LOGGER.info(f"\n{prefix} starting export with MNN {MNN.version()}...")
+        assert Path(f_onnx).exists(), f"failed to export ONNX file: {f_onnx}"
+        f = str(self.file.with_suffix(".mnn"))  # MNN model file
+        args = ["", "-f", "ONNX", "--modelFile", f_onnx, "--MNNModel", f, "--bizCode", json.dumps(self.metadata)]
+        if self.args.int8:
+            args.append("--weightQuantBits")
+            args.append("8")
+        if self.args.half:
+            args.append("--fp16")
+        mnnconvert.convert(args)
+        # remove scratch file for model convert optimize
+        convert_scratch = Path(self.file.parent / ".__convert_external_data.bin")
+        if convert_scratch.exists():
+            convert_scratch.unlink()
         return f, None
 
     @try_export
@@ -682,7 +725,7 @@ class Exporter:
         return f, ct_model
 
     @try_export
-    def export_engine(self, prefix=colorstr("TensorRT:")):
+    def export_engine(self, dla=None, prefix=colorstr("TensorRT:")):
         """YOLO TensorRT export https://developer.nvidia.com/tensorrt."""
         assert self.im.device.type != "cpu", "export running on CPU but must be on GPU, i.e. use 'device=0'"
         f_onnx, _ = self.export_onnx()  # run before TRT import https://github.com/ultralytics/ultralytics/issues/7016
@@ -691,10 +734,10 @@ class Exporter:
             import tensorrt as trt  # noqa
         except ImportError:
             if LINUX:
-                check_requirements("tensorrt>7.0.0,<=10.1.0")
+                check_requirements("tensorrt>7.0.0,!=10.1.0")
             import tensorrt as trt  # noqa
         check_version(trt.__version__, ">=7.0.0", hard=True)
-        check_version(trt.__version__, "<=10.1.0", msg="https://github.com/ultralytics/ultralytics/pull/14239")
+        check_version(trt.__version__, "!=10.1.0", msg="https://github.com/ultralytics/ultralytics/pull/14239")
 
         # Setup and checks
         LOGGER.info(f"\n{prefix} starting export with TensorRT {trt.__version__}...")
@@ -717,6 +760,20 @@ class Exporter:
         network = builder.create_network(flag)
         half = builder.platform_has_fast_fp16 and self.args.half
         int8 = builder.platform_has_fast_int8 and self.args.int8
+
+        # Optionally switch to DLA if enabled
+        if dla is not None:
+            if not IS_JETSON:
+                raise ValueError("DLA is only available on NVIDIA Jetson devices")
+            LOGGER.info(f"{prefix} enabling DLA on core {dla}...")
+            if not self.args.half and not self.args.int8:
+                raise ValueError(
+                    "DLA requires either 'half=True' (FP16) or 'int8=True' (INT8) to be enabled. Please enable one of them and try again."
+                )
+            config.default_device_type = trt.DeviceType.DLA
+            config.DLA_core = int(dla)
+            config.set_flag(trt.BuilderFlag.GPU_FALLBACK)
+
         # Read ONNX file
         parser = trt.OnnxParser(network, logger)
         if not parser.parse_from_file(f_onnx):
@@ -736,7 +793,7 @@ class Exporter:
                 LOGGER.warning(f"{prefix} WARNING ⚠️ 'dynamic=True' model requires max batch size, i.e. 'batch=16'")
             profile = builder.create_optimization_profile()
             min_shape = (1, shape[1], 32, 32)  # minimum input shape
-            max_shape = (*shape[:2], *(max(1, self.args.workspace) * d for d in shape[2:]))  # max input shape
+            max_shape = (*shape[:2], *(int(max(1, self.args.workspace) * d) for d in shape[2:]))  # max input shape
             for inp in inputs:
                 profile.set_shape(inp.name, min=min_shape, opt=shape, max=max_shape)
             config.add_optimization_profile(profile)
@@ -871,8 +928,10 @@ class Exporter:
             tmp_file = f / "tmp_tflite_int8_calibration_images.npy"  # int8 calibration images file
             if self.args.data:
                 f.mkdir()
-                images = [batch["img"].permute(0, 2, 3, 1) for batch in self.get_int8_calibration_dataloader(prefix)]
-                images = torch.cat(images, 0).float()
+                images = [batch["img"] for batch in self.get_int8_calibration_dataloader(prefix)]
+                images = torch.nn.functional.interpolate(torch.cat(images, 0).float(), size=self.imgsz).permute(
+                    0, 2, 3, 1
+                )
                 np.save(str(tmp_file), images.numpy().astype(np.float32))  # BHWC
                 np_data = [["images", tmp_file, [[[[0, 0, 0]]]], [[[[255, 255, 255]]]]]]
 
