@@ -71,6 +71,7 @@ from ultralytics.nn.models.Attention.MSFFM import MSFFM_AttentionModule
 
 
 from ultralytics.nn.models.fighting_model.block.Retinexformer import RetinexFormer
+from ultralytics.nn.models.fighting_model.block.CLFT import CLFT
 
 
 

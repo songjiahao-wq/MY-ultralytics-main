@@ -10,7 +10,6 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from ultralytics.nn.models.add_models.add_block import *
-from ultralytics.nn.models.add_models.add_block import *
 from ultralytics.nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
@@ -94,7 +93,6 @@ try:
     import thop
 except ImportError:
     thop = None
-
 
 class BaseModel(nn.Module):
     """The BaseModel class serves as a base class for all the models in the Ultralytics YOLO family."""
@@ -334,7 +332,7 @@ class DetectionModel(BaseModel):
         # Build strides
         m = self.model[-1]  # Detect()
         if isinstance(m, Detect):  # includes all Detect subclasses like Segment, Pose, OBB, WorldDetect
-            s = 256  # 2x min stride
+            s = 640  # 2x min stride
             m.inplace = self.inplace
 
             def _forward(x):
@@ -1036,6 +1034,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 C2fPSA,
                 C2fCIB,
                 C2PSA,
+                RetinexFormer
             }:
                 args.insert(2, n)  # number of repeats
                 n = 1
@@ -1059,7 +1058,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                    ResidualGroupConv, PSAModule_s, EMA, deformable_LKA_Attention_experimental, deformable_LKA_Attention, DAModule, EMAU, LKA_Attention,
                    DyMCAConv, DyCAConv, CAConv2, SKConv, GSConv, VoVGSCSP, SPPCSPC, deformable_LKA_Attention, MobileViTAttention, ParNetAttention,PSA,
                    S2Attention,SKAttention, SpatialGroupEnhance, TripletAttention, SEAttention, ShuffleAttention,
-                   deformable_LKA_Attention_experimental, SPD_Conv, EVCBlock, MSCAAttention}:
+                   deformable_LKA_Attention_experimental, SPD_Conv, EVCBlock, MSCAAttention, CLFT}:
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if not output
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
