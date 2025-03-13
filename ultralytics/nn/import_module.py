@@ -50,6 +50,7 @@ from ultralytics.nn.models.fighting_model.attention.TripletAttention import Trip
 from ultralytics.nn.models.fighting_model.attention.UFOAttention import UFOAttention
 from ultralytics.nn.models.fighting_model.attention.ViP import WeightedPermuteMLP
 from ultralytics.nn.models.fighting_model.attention.msca import MSCAAttention
+from ultralytics.nn.models.fighting_model.attention.GSCA import GCSA
 #from ultralytics.nn.models.add_models.add_block import EMA
 
 # add ATT end ------------------------------------
