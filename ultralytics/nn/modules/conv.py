@@ -65,7 +65,23 @@ class Conv(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-
+        # self.act = nn.Identity() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.Tanh() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.Sigmoid() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.LeakyReLU(0.1) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.Hardswish() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = Mish() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = AconC(c2) iMemoryEfficientMisf act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = MetaAconC(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = SiLU_beta(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = FReLU_noBN_biasFalse(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = FReLU_noBN_biasTrue(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act = DyReLUA(c2, conv_type='2d') if act is True else (act if isinstance(act, nn.Module) else nn.Identity())#参数量大一些
+        # self.act = DyReLUB(c2, conv_type='2d') if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # 比较看好的激活函数是DyReLU和meta - AconC这两个激活函数
     def forward(self, x):
         """
         Apply convolution, batch normalization and activation to input tensor.
